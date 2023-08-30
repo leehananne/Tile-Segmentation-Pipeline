@@ -1,0 +1,11 @@
+DracoPy
+gltflib
+matplotlib
+numpy
+Pillow
+pyproj
+scipy
+torch
+tqdm
+transformers
+trimesh

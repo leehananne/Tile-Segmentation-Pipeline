@@ -1,0 +1,71 @@
+{
+    "root": {
+        "boundingVolume": {
+            "box": [
+                0.5, -0.5, 0.0, 0.5, 0.0, 0.0, 0.0, -0.5, 0.0, 0.0, 0.0, 0.1
+            ]
+        },
+        "geometricError": 1.0,
+        "refine": "REPLACE",
+        "contents": [
+            { "uri": "output/submesh0_8.glb", "group": 8 },
+            { "uri": "output/submesh0_2.glb", "group": 2 },
+            { "uri": "output/submesh0_11.glb", "group": 11 },
+            { "uri": "output/submesh0_4.glb", "group": 4 },
+            { "uri": "output/submesh0_9.glb", "group": 9 },
+            { "uri": "output/submesh0_5.glb", "group": 5 },
+            { "uri": "output/submesh0_7.glb", "group": 7 },
+            { "uri": "output/submesh1_8.glb", "group": 8 },
+            { "uri": "output/submesh1_5.glb", "group": 5 },
+            { "uri": "output/submesh1_2.glb", "group": 2 },
+            { "uri": "output/submesh1_6.glb", "group": 6 }
+        ]
+    },
+    "asset": { "version": "1.1" },
+    "geometricError": 2.0,
+    "groups": [
+        { "class": "road" },
+        { "class": "sidewalk" },
+        { "class": "building" },
+        { "class": "wall" },
+        { "class": "fence" },
+        { "class": "pole" },
+        { "class": "traffic_light" },
+        { "class": "traffic_sign" },
+        { "class": "vegetation" },
+        { "class": "terrain" },
+        { "class": "sky" },
+        { "class": "person" },
+        { "class": "rider" },
+        { "class": "car" },
+        { "class": "truck" },
+        { "class": "bus" },
+        { "class": "train" },
+        { "class": "motorcycle" },
+        { "class": "bicycle" }
+    ],
+    "schema": {
+        "id": "schema",
+        "classes": {
+            "road": { "name": "road" },
+            "sidewalk": { "name": "sidewalk" },
+            "building": { "name": "building" },
+            "wall": { "name": "wall" },
+            "fence": { "name": "fence" },
+            "pole": { "name": "pole" },
+            "traffic_light": { "name": "traffic light" },
+            "traffic_sign": { "name": "traffic sign" },
+            "vegetation": { "name": "vegetation" },
+            "terrain": { "name": "terrain" },
+            "sky": { "name": "sky" },
+            "person": { "name": "person" },
+            "rider": { "name": "rider" },
+            "car": { "name": "car" },
+            "truck": { "name": "truck" },
+            "bus": { "name": "bus" },
+            "train": { "name": "train" },
+            "motorcycle": { "name": "motorcycle" },
+            "bicycle": { "name": "bicycle" }
+        }
+    }
+}
