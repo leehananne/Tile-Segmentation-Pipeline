@@ -1,6 +1,6 @@
-
-
 # ****************Overview****************
+
+There are 3 programs involved in the segmentation, viewing, and labelling of the meshes. A broad overview is given below. 
 
 ## SUMS
 
@@ -80,8 +80,7 @@ It can also be built from source using CMake, but this *************************
     - Problem comes in the Mesh Annotator - mesh will not load into the annotator if it is not manifold
 - Recommended Mesh Size
     - TUDelft team recommends that each tile ********************should be larger than 50 x 50 m********************
-    - The program can perform detections on **both high-level** (e.g. a mesh with multiple buildings and trees) **and low-level** (e.g. a mesh with just a building and tree) meshes
-    - Classification performance is however generally better on a **********************higher-level (e.g. large scale)********************** mesh
+    - Classification performance is however generally better on a **********************higher-level (e.g. larger scale with lesser details)********************** mesh, possibly due to it’s similarity with training data
 
 ---
 
@@ -89,7 +88,7 @@ It can also be built from source using CMake, but this *************************
 
 ## 1. Download Demo Data
 
-- Run `wget` in the directory to download files and file structure of required demo data (a preview of the data can be found [here](https://3d.bk.tudelft.nl/opendata/sum/1.0/data_demo/))
+- Run the following command in the unzipped SUMS folder to download necessary `data_demo` files (a preview of the data can be found [here](https://3d.bk.tudelft.nl/opendata/sum/1.0/data_demo/))
     
     ```python
     wget -r -np -nH --cut-dirs=3 --reject="index.html,index.htm,*tmp" https://3d.bk.tudelft.nl/opendata/sum/1.0/data_demo/
@@ -106,10 +105,10 @@ It can also be built from source using CMake, but this *************************
 
 ## 2. Prepare `config.txt`
 
-Add paths for `root_path` and `seg_aug_py_path`
+In `...\your_folder_name\data_demo\`, there is a `config.txt`. In here, add the respective file paths for:
 
 - `root_path`
-    - Add path to demo data file
+    - Add path to data_demo file
         
         ```powershell
         # in config.txt
@@ -138,7 +137,7 @@ Replace the `...\Python\Python37\Lib\site-packages\imblearn\over_sampling\_smot
 ## 1. Run program
 
 - Navigate to the directory where `semantic_urban_mesh_segmentation.exe` is located
-- Execute the command, making sure to **replace it with your specific file path** to where `config.txt` is located
+- Execute the command below, making sure to **replace it with your specific file path** to where `config.txt` is located
     
     ```python
     .\semantic_urban_mesh_segmentation.exe "C:/Users/USER/.../your_folder_name/data_demo/"
@@ -147,10 +146,8 @@ Replace the `...\Python\Python37\Lib\site-packages\imblearn\over_sampling\_smot
 
 ## 2. View Results
 
-- Output mesh is in `...\data_demo\output`
-- Open with ************Mapple************ to view
-- Output faces are colour-coded (normalsied RGB) but still unlabelled
-- Example code to do this is where
+- Output mesh is in `...\data_demo\test\output`
+- Open with ************Mapple************ to view results
 
 ---
 
@@ -160,29 +157,27 @@ Replace the `...\Python\Python37\Lib\site-packages\imblearn\over_sampling\_smot
 
 - If custom data is not in the required format, convert using
     - MeshLab
-        - **Preferred** for conversion because it exports the `.ply` and corresponding texture files
+        - **Preferred** for conversion because of convenience (exports the `.ply` and automatically “links” it with the corresponding texture files)
+        - Ensure `.ply` is exported with its **normals** and in ************ASCII************ format
         - Format of texture files can be changed by changing the name during export to end in “.jpeg”
-        - Ensure `.ply` is exported with normals and in ************ASCII************ format
     - Blender
-        - Export converted mesh and texture
-        - In exported `.ply` file, add the following lines **for each corresponding texture file**, changing “texture_0.jpeg” to the name of your texture
+        - Export converted mesh and texture in necessary file formats
+        - In exported `.ply` file, add the following lines at the top **for each corresponding texture file**, changing “texture_0.jpeg” to the name of your texture
             
             ```powershell
             comment TextureFile texture_0.jpeg
             ```
             
-- Put into where
-- Run
+- Put the meshes into `...\your_folder_name\data_demo\test\input`
+- Run the program
 
 ## Output
 
-- labels
-    - rgb values normalised
-    - provide example code to label based on the rgb values
-
-## Converting Back to add to .glb metadata
-
-(i.e. link it back to the pipeline)
+- View results using ************Mapple************
+- Labels
+    - The faces are color coded but the labels are not added (i.e. in the `.ply` file, each face is still “unlabeled” despite having an assigned RGB face color)
+    - The RGB values are normalised
+    - An example code to add the labels is available in the `examples` folder
 
 ---
 
@@ -199,7 +194,7 @@ All these options can be modified within `config.txt`
 - **Detection**
     - Classes
         - By default, it detects 6 classes classes
-        - Detected classes can be modified by removing them, adding new classes are not possible
+        - Detected classes can only be modified by removing them, adding new classes are not possible
     - Label Colors
         - The colors of the associated labels can be changed
 - **Saving Intermediate Data**
@@ -223,9 +218,12 @@ All these options can be modified within `config.txt`
 
 ## Program Not Running
 
-Slashes and backslashes
-
-Config.txt formatting
+- Following the examples given
+    - Ensure slashes are forward/backward
+    - Ensure ending slashes
+- In `config.txt`, ensure file paths are
+    - Without inverted commas
+    - Are absolute file paths
 
 ## Unable to find `encodings`
 
@@ -233,8 +231,17 @@ Ensure that Python is 3.7.9
 
 ## Distorted Output Mesh
 
-glb → gltf → glb and then convert
+If the original data is in `.glb` format, it cause errors and the conversion from 
+
+glb → gltf → glb → ply might be necessary. Code to do it can be found here
 
 ## Not reading input texture files
 
-ensure comments in .ply file
+Ensure that the `.ply` file is “linked” to its respective `.jpeg` file by
+
+1. Opening the `.ply` file in a text editor
+2. Checking the comments at the top of the file. **For each corresponding texture file**, there should be a comment as below. Change “texture_0.jpeg” to the name of the corresponding texture file.
+    
+    ```powershell
+    comment TextureFile texture_0.jpeg
+    ```
