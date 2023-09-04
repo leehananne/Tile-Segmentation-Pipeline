@@ -177,7 +177,7 @@ Replace the `...\Python\Python37\Lib\site-packages\imblearn\over_sampling\_smot
 - Labels
     - The faces are color coded but the labels are not added (i.e. in the `.ply` file, each face is still “unlabeled” despite having an assigned RGB face color)
     - The RGB values are normalised
-    - An example code to add the labels is available in the `examples` folder
+    - An example code to add the labels is available in the example code folder
 
 ---
 
