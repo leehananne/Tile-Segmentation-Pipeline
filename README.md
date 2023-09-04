@@ -1,6 +1,6 @@
 # ****************Overview****************
 
-There are 3 programs involved in the segmentation, viewing, and labelling of the meshes. A broad overview is given below. 
+There are 3 programs involved in the segmentation, viewing, and labelling of the meshes. A broad overview of each is given below. 
 
 ## SUMS
 
