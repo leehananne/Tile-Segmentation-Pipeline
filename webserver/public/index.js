@@ -45,7 +45,7 @@ const customShader = new Cesium.CustomShader({
     `,
 });
 
-tileset.customShader = customShader;
+// tileset.customShader = customShader;
 
 // add button to toggle custom shader
 const button = document.createElement("button");

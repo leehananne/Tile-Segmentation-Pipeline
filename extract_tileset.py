@@ -2,83 +2,155 @@
 import argparse
 import logging
 from pathlib import Path
+from typing import Optional, Union
 import numpy as np
 from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
-from py3dtiles.tileset.tileset import TileSet, Tile
-from py3dtiles.tileset import BoundingVolumeBox
+from gltflib import Scene, Node
 from gltflib.gltf import GLTF
 from pyproj import Transformer
+from py3dtiles.tileset import TileSet, Tile, BoundingVolumeBox
+from tileset import TilesetTraverser
 
 LOG: logging.Logger = logging.getLogger(__name__)
 
 
-class TilesetExtractor:
-    """extract a branch of the tileset from the full tileset"""
+class TilesetExtractor(TilesetTraverser):
+    """extract a branch of the tileset from the full tileset by filename
 
-    INPUT_DIR: Path = Path(".")
-    OUTPUT_DIR: Path = Path(".")
-    root_uri: Path = Path(".")
+    uses a depth first search to traverse the tileset and match the
+    tile content to the filename. if the filename is found, the branch of the
+    tileset is extracted and written to the output directory.
+
+    if with_neighbours is set, the neighbours of the tile containing the file
+    are also included in the output.
+
+    parameters
+    ----------
+    find_name: str
+        name of file to search for
+
+    attributes
+    ----------
+    INPUT_DIR: Path
+        input directory of the tileset
+    OUTPUT_DIR: Path
+        output directory of the tileset
+    root_uri: Path
+        root uri of the tileset to resolve relative paths
+    with_neighbours: bool
+        Whether to include neighbours in output
+    TILE_PBAR: tqdm
+        progress bar for tiles checked
+
+    examples
+    --------
+    >>> extractor = TilesetExtractor("FINDME.glb")
+    >>> extractor.extract_tileset("tileset.json")
+
+    """
+
     with_neighbours: bool = False
+    """whether to include neighbours in output"""
+
     TILE_PBAR = tqdm(desc="Tiles checked", unit=" tile")
+    """progress bar for tiles checked"""
 
     def __init__(self, find_name: str) -> None:
-        self.find_name = find_name
+        self.find_name: str = find_name
+        """name of file to search for"""
 
-    def search_tileset(self, tileset: TileSet) -> bool:
-        """search tileset"""
-        if tileset.root_uri is not None:
-            self.root_uri = tileset.root_uri
-        return self.search_tile(tileset.root_tile)
+    def traverse_tileset(self, tileset: TileSet) -> bool:
+        """traverse the tileset and return if the file was found
 
-    def search_tile(self, tile: Tile) -> bool:
-        """search tile"""
+        traverses the tileset root tile
+
+        parameters
+        ----------
+        tileset: py3dtiles.tileset.TileSet
+            tileset to traverse
+
+        returns
+        -------
+        bool
+            True if the file was found, False otherwise
+
+        """
+        root_uri: Path = self.root_uri or tileset.root_uri
+        traverse: bool = self.traverse_tile(self.get_tileset_tile(tileset))
+        self.root_uri = root_uri  # set root uri back to original
+        return traverse
+
+    def traverse_tile(self, tile: Tile) -> bool:
+        """traverse tile and return if the file was found
+
+        traverses the tile content and children
+
+        parameters
+        ----------
+        tile: py3dtiles.tile.Tile
+            tile to traverse
+
+        returns
+        -------
+        bool
+            True if the file was found, False otherwise
+
+        """
         self.TILE_PBAR.update()
-        if self.search_tile_content(tile):
-            return True
-        if self.search_tile_children(tile):
-            return True
-        return False
+        return self.traverse_tile_content(tile) or self.traverse_tile_children(
+            tile
+        )
 
-    def search_tile_content(self, tile: Tile) -> bool:
-        """search tile content"""
-        if tile.content is None:
+    def traverse_tile_content(self, tile: Tile) -> bool:
+        """traverse tile content and return if the file was found
+
+        if content is a tileset, traverse the tileset
+
+        parameters
+        ----------
+        tile: py3dtiles.tile.Tile
+            tile to traverse
+
+        returns
+        -------
+        bool
+            True if the file was found, False otherwise
+
+        """
+        content_uri: Optional[Path] = self.get_tile_content(tile)
+        if content_uri is None:
             return False
-        uri_: str = tile.content["uri"]
-        if uri_[0] == "/":
-            uri_ = uri_[1:]
-        uri: Path = self.INPUT_DIR / uri_
-        if not uri.exists():
-            # try tileset root dir
-            uri = self.root_uri / uri_
-        if self.find_name in uri_:
+        if self.find_name in content_uri.name:
             LOG.warning("File %s found", self.find_name)
             return True
-        if not uri.exists():
-            LOG.info("File %s does not exist", uri)
-            tile.content = None
-            return False
-        if uri.suffix == ".json":
-            tileset: TileSet = TileSet.from_file(uri)
-            root_uri: Path = self.root_uri
-            if self.search_tileset(tileset):
-                Path.mkdir(
-                    self.OUTPUT_DIR
-                    / Path.relative_to(uri, self.INPUT_DIR).parent,
-                    parents=True,
-                    exist_ok=True,
-                )
-                tileset.write_as_json(
-                    self.OUTPUT_DIR / Path.relative_to(uri, self.INPUT_DIR)
-                )
+        if content_uri.suffix == ".json":
+            tileset: TileSet = TileSet.from_file(content_uri)
+            if self.traverse_tileset(tileset):
+                self.write_tileset(tileset, content_uri.name)
                 return True
-            self.root_uri = root_uri
         return False
 
-    def search_tile_children(self, tile: Tile) -> bool:
-        """search tile children"""
+    def traverse_tile_children(self, tile: Tile) -> bool:
+        """traverses the tiles in the tile children and return if the file was
+        found
+
+        if with_neighbours is set, the neighbours of the tile containing the
+        file are also included in the output.
+
+        parameters
+        ----------
+        tile: py3dtiles.tile.Tile
+            tile to traverse
+
+        returns
+        -------
+        bool
+            True if the file was found, False otherwise
+
+        """
         for child in tile.children:
-            if not self.search_tile(child):
+            if not self.traverse_tile(child):
                 continue
             if self.with_neighbours:
                 self.with_neighbours = False
@@ -88,28 +160,89 @@ class TilesetExtractor:
         return False
 
     def extract_tileset(self, tileset_name: str) -> bool:
-        """extract tileset"""
+        """extract tileset from file and return if the file was found
+
+        parameters
+        ----------
+        tileset_name: str
+            name of tileset file
+
+        returns
+        -------
+        bool
+            True if the file was found, False otherwise
+
+        """
         LOG.info("Loading tileset")
-        Path.mkdir(self.OUTPUT_DIR, parents=True, exist_ok=True)
         tileset: TileSet = TileSet.from_file(self.INPUT_DIR / tileset_name)
-        if self.search_tileset(tileset):
+        if self.traverse_tileset(tileset):
             LOG.info("Writing tileset")
-            tileset.write_as_json(self.OUTPUT_DIR / "extract.json")
+            self.write_tileset(tileset, tileset_name)
             return True
         return False
 
 
 class LatLongExtractor(TilesetExtractor):
-    """extract a branch of the tileset from the full tileset by lat long"""
+    """extract a branch of the tileset from the full tileset by lat long
+
+    uses a depth first search to traverse the tileset and match the
+    centre of the tile bounding volume to the lat long. if the tile is found,
+    the branch of the tileset is extracted and written to the output directory.
+
+    if with_neighbours is set, the neighbours of the tile containing the file
+    are also included in the output.
+
+    parameters
+    ----------
+    bounds: numpy.ndarray
+        bounds of tileset to extract
+
+    attributes
+    ----------
+    INPUT_DIR: Path
+        input directory of the tileset
+    OUTPUT_DIR: Path
+        output directory of the tileset
+    with_neighbours: bool
+        include neighbours
+    TILE_PBAR: tqdm
+        progress bar for tiles checked
+    bounds: numpy.ndarray
+        bounds of tileset to extract
+    ECEF_WGS84: pyproj.transformer.Transformer
+        transformer from ECEF to WGS84
+
+    """
 
     ECEF_WGS84: Transformer = Transformer.from_crs("EPSG:4978", "EPSG:4326")
+    """transformer from ECEF to WGS84"""
 
     def __init__(self, bounds: np.ndarray) -> None:
+        super().__init__("")
+        if bounds.shape == (4,):
+            bounds = bounds.reshape((2, 2))
+        if bounds.shape != (2, 2):
+            raise ValueError("Bounds must be a 2x2 array")
         self.bounds: np.ndarray = bounds
+        """bounds of tileset to extract"""
 
     @staticmethod
     def get_gltf_coords(gltf: GLTF) -> list[tuple[float, float]]:
-        """get list of lat longs from gltf"""
+        # pylint: disable=unpacking-non-sequence
+        """retrieve the lat long of the translation of each node in the scene
+        from the gltf
+
+        parameters
+        ----------
+        gltf: gltflib.gltf.GLTF
+            gltf to retrieve coords from
+
+        returns
+        -------
+        list[tuple[float, float]]
+            list of lat longs of the translation of each node in the scene
+
+        """
         if (
             gltf.model.scene is None
             or gltf.model.scenes is None
@@ -117,39 +250,76 @@ class LatLongExtractor(TilesetExtractor):
             or gltf.model.nodes is None
         ):
             return []
-        scene = gltf.model.scenes[gltf.model.scene]
+        scene: Scene = gltf.model.scenes[gltf.model.scene]
         if scene.nodes is None or len(scene.nodes) == 0:
             return []
         coords: list[tuple[float, float]] = []
         lat: float
         long: float
         for node_index in scene.nodes:
-            node = gltf.model.nodes[node_index]
+            node: Node = gltf.model.nodes[node_index]
             if node.translation is None:
                 continue
             # y-up to z-up
-            cartesian: tuple[float, float, float] = (
-                node.translation[0],
-                -node.translation[2],
-                node.translation[1],
+            lat, long, _ = LatLongExtractor.ECEF_WGS84.transform(
+                xx=node.translation[0],
+                yy=-node.translation[2],
+                zz=node.translation[1],
             )
-            lat, long, _ = LatLongExtractor.ECEF_WGS84.transform(*cartesian)
             coords.append((lat, long))
         return coords
 
     @staticmethod
     def get_tile_centre_coords(tile: Tile) -> tuple[float, float]:
-        """get lat long of centre from tile bounding volume"""
+        # pylint: disable=unpacking-non-sequence
+        """get lat long of centre from tile bounding volume
+
+        parameters
+        ----------
+        tile: py3dtiles.tile.Tile
+            tile to get centre of
+
+        returns
+        -------
+        tuple[float, float]
+            lat long of centre of tile
+
+        """
         volume = tile.bounding_volume
         if not isinstance(volume, BoundingVolumeBox):
             raise ValueError("Bounding volume is not a box")
-        x, y, z = volume.get_center()
-        lat, long, _ = LatLongExtractor.ECEF_WGS84.transform(x, y, z)
+        x_coord, y_coord, z_coord = volume.get_center()
+        (
+            lat,
+            long,
+            _,
+        ) = LatLongExtractor.ECEF_WGS84.transform(
+            xx=x_coord,
+            yy=y_coord,
+            zz=z_coord,
+        )
         return (lat, long)
 
     @staticmethod
     def check_tile_centre_in_bounds(tile: Tile, bounds: np.ndarray) -> bool:
-        """check if tile centre is in bounds"""
+        """check if tile centre is in bounds
+
+        uses the tile bounding volume to get the centre of the tile and checks
+        if it is in the bounds
+
+        parameters
+        ----------
+        tile: py3dtiles.tile.Tile
+            tile to check
+        bounds: numpy.ndarray
+            bounds to check against
+
+        returns
+        -------
+        bool
+            True if tile centre is in bounds, False otherwise
+
+        """
         if tile.bounding_volume is None:
             return False
         lat, long = LatLongExtractor.get_tile_centre_coords(tile)
@@ -159,39 +329,32 @@ class LatLongExtractor(TilesetExtractor):
             return True
         return False
 
-    def search_tile_content(
-        self,
-        tile: Tile,
-    ) -> bool:
-        """search tile content"""
+    def traverse_tile_content(self, tile: Tile) -> bool:
+        """traverse tile content and return if the tile is within bounds
+
+        if content is a tileset, traverse the tileset
+
+        parameters
+        ----------
+        tile: py3dtiles.tile.Tile
+            tile to traverse
+
+        returns
+        -------
+        bool
+            True if the tile is within bounds, False otherwise
+
+        """
         if self.check_tile_centre_in_bounds(tile, self.bounds):
-            LOG.warning("Tile within bounds")
+            LOG.warning("Tile within bounds found")
             return True
-        if tile.content is None:
+        content_uri: Optional[Path] = self.get_tile_content(tile)
+        if content_uri is None:
             return False
-        uri_: str = tile.content["uri"]
-        if uri_[0] == "/":
-            uri_ = uri_[1:]
-        uri: Path = self.INPUT_DIR / uri_
-        if not uri.exists():
-            # try tileset root dir
-            uri = self.root_uri / uri_
-        if not uri.exists():
-            LOG.info("File %s does not exist", uri)
-            return False
-        if uri.suffix == ".json":
-            tileset: TileSet = TileSet.from_file(uri)
-            if self.search_tileset(tileset):
-                # tileset.write_as_json(cls.OUTPUT_DIR / uri.name)
-                Path.mkdir(
-                    self.OUTPUT_DIR
-                    / Path.relative_to(uri, self.INPUT_DIR).parent,
-                    parents=True,
-                    exist_ok=True,
-                )
-                tileset.write_to_directory(
-                    self.OUTPUT_DIR / Path.relative_to(uri, self.INPUT_DIR)
-                )
+        if content_uri.suffix == ".json":
+            tileset: TileSet = TileSet.from_file(content_uri)
+            if self.traverse_tileset(tileset):
+                self.write_tileset(tileset, content_uri.name)
                 return True
         return False
 
@@ -210,7 +373,13 @@ if __name__ == "__main__":
         "--search-name",
         type=str,
         help="name of file to search for",
-        # required=True,
+    )
+    parser.add_argument(
+        "-b",
+        "--bounds",
+        type=float,
+        nargs=4,
+        help="bounds of tileset to extract",
     )
     parser.add_argument(
         "-i",
@@ -237,18 +406,23 @@ if __name__ == "__main__":
         help="increase output verbosity",
     )
     args: argparse.Namespace = parser.parse_args()
+    if not args.search_name and not args.bounds:
+        parser.error("Either --search-name or --bounds is required")
     if args.input_dir:
         TilesetExtractor.INPUT_DIR = Path(args.input_dir)
     if args.output_dir:
         TilesetExtractor.OUTPUT_DIR = Path(args.output_dir)
     if args.verbose:
-        LOG.setLevel(logging.INFO)
+        logging.basicConfig(level=logging.INFO)
     TilesetExtractor.with_neighbours = args.with_neighbours
     with logging_redirect_tqdm():
-        # extractor = TilesetExtractor(args.search_name)
-        extractor = LatLongExtractor(
-            np.array(((1.348624, 103.846614), (1.352935, 103.851957))),
-        )
+        extractor: Optional[Union[TilesetExtractor, LatLongExtractor]] = None
+        if args.bounds:
+            extractor = LatLongExtractor(np.array(args.bounds))
+        if args.search_name:
+            extractor = TilesetExtractor(args.search_name)
+        if extractor is None:
+            raise RuntimeError("Extractor not set")
         if extractor.extract_tileset(args.filename):
             LOG.info("Tileset extracted")
         else:

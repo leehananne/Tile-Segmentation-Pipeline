@@ -5,7 +5,14 @@ import torch
 
 
 def convert(path: str) -> None:
-    """convert pytorch .pt file to numpy .npy file"""
+    """convert pytorch .pt file to numpy .npy file and save it
+
+    parameters
+    ----------
+    path: str
+        path to .pt file
+
+    """
     data = torch.load(path)
     np.save(path.replace(".pt", ".npy"), data.detach().cpu().numpy())
 
