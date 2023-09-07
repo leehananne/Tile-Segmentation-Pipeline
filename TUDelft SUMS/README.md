@@ -4,6 +4,10 @@ There are 3 programs involved in the segmentation, viewing, and labelling of the
 
 ## SUMS
 
+![SUMS: Semantic Urban Mesh Segmentation by TUDelft](../.images/sums_tudelft.png)
+
+SUMS: Semantic Urban Mesh Segmentation by TUDelft
+
 - Open-source program for automatic segmentation of large-scale urban meshes (SUMS)
 - Implemented in C++ and other open-source libraries, such as [CGAL](https://www.cgal.org/) and [Easy3D](https://github.com/LiangliangNan/Easy3D)
 - Read their paper: [SUM: A Benchmark Dataset of Semantic Urban Meshes](https://www.sciencedirect.com/science/article/pii/S0924271621001854)
