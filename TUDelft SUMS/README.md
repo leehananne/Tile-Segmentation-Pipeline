@@ -233,9 +233,7 @@ Ensure that Python is 3.7.9
 
 ## Distorted Output Mesh
 
-If the original data is in `.glb` format, it cause errors and the conversion from 
-
-glb → gltf → glb → ply might be necessary. Code to do it can be found in
+If the original data is in .glb format, it cause errors and the conversion from glb → gltf → glb → ply might be necessary. This can be done with Blender or MeshLab.
 
 ## Not reading input texture files
 
