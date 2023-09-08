@@ -19,4 +19,4 @@ For instance,
 ```
 Replace the URL with http://localhost:3000/root.json
     
-    ![unity.png](../.images/unity.png)
+![unity.png](../.images/unity.png)
