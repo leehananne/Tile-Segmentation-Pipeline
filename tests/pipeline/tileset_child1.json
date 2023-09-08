@@ -1,0 +1,94 @@
+{
+    "asset": {
+        "version": "1.0"
+    },
+    "geometricError": 2.0,
+    "root": {
+        "content": {
+            "uri": "model.glb"
+        },
+        "refine": "REPLACE",
+        "boundingVolume": {
+            "box": [
+                0.5, -0.5, 0.0, 0.5, 0.0, 0.0, 0.0, -0.5, 0.0, 0.0, 0.0, 0.1
+            ]
+        },
+        "geometricError": 1.0,
+        "children": [
+            {
+                "content": {
+                    "uri": "model.glb"
+                },
+                "refine": "REPLACE",
+                "boundingVolume": {
+                    "box": [
+                        0.5, -0.5, 0.0, 0.5, 0.0, 0.0, 0.0, -0.5, 0.0, 0.0, 0.0,
+                        0.1
+                    ]
+                },
+                "geometricError": 1.0,
+                "children": [
+                    {
+                        "content": {
+                            "uri": "model.glb"
+                        },
+                        "refine": "REPLACE",
+                        "boundingVolume": {
+                            "box": [
+                                0.5, -0.5, 0.0, 0.5, 0.0, 0.0, 0.0, -0.5, 0.0,
+                                0.0, 0.0, 0.1
+                            ]
+                        },
+                        "geometricError": 1.0,
+                        "children": [
+                            {
+                                "content": {
+                                    "uri": "model.glb"
+                                },
+                                "refine": "REPLACE",
+                                "boundingVolume": {
+                                    "box": [
+                                        0.5, -0.5, 0.0, 0.5, 0.0, 0.0, 0.0,
+                                        -0.5, 0.0, 0.0, 0.0, 0.1
+                                    ]
+                                },
+                                "geometricError": 1.0,
+                                "children": [
+                                    {
+                                        "content": {
+                                            "uri": "model.glb"
+                                        },
+                                        "refine": "REPLACE",
+                                        "boundingVolume": {
+                                            "box": [
+                                                0.5, -0.5, 0.0, 0.5, 0.0, 0.0,
+                                                0.0, -0.5, 0.0, 0.0, 0.0, 0.1
+                                            ]
+                                        },
+                                        "geometricError": 1.0,
+                                        "children": [
+                                            {
+                                                "content": {
+                                                    "uri": "model.glb"
+                                                },
+                                                "refine": "REPLACE",
+                                                "boundingVolume": {
+                                                    "box": [
+                                                        0.5, -0.5, 0.0, 0.5,
+                                                        0.0, 0.0, 0.0, -0.5,
+                                                        0.0, 0.0, 0.0, 0.1
+                                                    ]
+                                                },
+                                                "geometricError": 1.0
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

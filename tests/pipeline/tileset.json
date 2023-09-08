@@ -1,0 +1,48 @@
+{
+    "asset": {
+        "version": "1.0"
+    },
+    "geometricError": 1e100,
+    "root": {
+        "content": {
+            "uri": "model1.glb"
+        },
+        "refine": "REPLACE",
+        "boundingVolume": {
+            "box": [
+                0, 0, 0, 7972671.25, 0, 0, 0, 7972671.25, 0, 0, 0,
+                7945940.3928064629
+            ]
+        },
+        "transform":[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+        "geometricError": 1e100,
+        "children": [
+            {
+                "content": {
+                    "uri": "tileset_child1.json"
+                },
+                "refine": "REPLACE",
+                "boundingVolume": {
+                    "box": [
+                        0, 0, 0, 7972671.25, 0, 0, 0, 7972671.25, 0, 0, 0,
+                        7945940.3928064629
+                    ]
+                },
+                "geometricError": 1e100
+            },
+            {
+                "content": {
+                    "uri": "tileset_child2.json"
+                },
+                "refine": "REPLACE",
+                "boundingVolume": {
+                    "box": [
+                        0, 0, 0, 7972671.25, 0, 0, 0, 7972671.25, 0, 0, 0,
+                        7945940.3928064629
+                    ]
+                },
+                "geometricError": 1e100
+            }
+        ]
+    }
+}
