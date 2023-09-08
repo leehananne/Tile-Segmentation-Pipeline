@@ -58,3 +58,29 @@ PORT=8080
 CesiumJS is used to visualise the tilesets. CesiumJS is installed locally as a Node module, and references to Cesium in `index.html` are achieved by using the module's folders as static directories.
 
 To visualise the metadata, a custom shader is provided which uses `EXT_MESH_FEATURES` to identify `_FEATURE_ID_0` attribute of the models. A button is provided to toggle the shader on and off. If the models do not have the `_FEATURE_ID_0` attribute, the shader will not work and will cause an error.
+
+# Browser-based Visualiser
+
+To retrieve the tiles from the server, within [`index.js`](public/index.js), amend Line 25 with the corresponding name of the tileset JSON.
+
+For instance,
+
+```
+.
+├── tileset/
+│   └── root.json
+└── webserver/
+    ├── app.js
+    ├── package.json
+    └── package-lock.json
+```
+
+Then inside `index.js`:
+
+```javascript
+const tileset = viewer.scene.primitives.add(
+    await Cesium.Cesium3DTileset.fromUrl("./root.json")
+);
+```
+
+will correctly add the tileset into the scene
