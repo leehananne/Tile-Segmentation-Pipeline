@@ -1,0 +1,80 @@
+{
+    "asset": {
+        "version": "1.0"
+    },
+    "geometricError": 2.0,
+    "root": {
+        "refine": "REPLACE",
+        "boundingVolume": {
+            "box": [
+                0.5, -0.5, 0.0, 0.5, 0.0, 0.0, 0.0, -0.5, 0.0, 0.0, 0.0, 0.1
+            ]
+        },
+        "geometricError": 1.0,
+        "children": [
+            {
+                "content": {
+                    "uri": "FINDME.glb"
+                },
+                "refine": "REPLACE",
+                "boundingVolume": {
+                    "box": [
+                        0.5, -0.5, 0.0, 0.5, 0.0, 0.0, 0.0, -0.5, 0.0, 0.0, 0.0,
+                        0.1
+                    ]
+                },
+                "geometricError": 1.0
+            },
+            {
+                "content": {
+                    "uri": "object_2.glb"
+                },
+                "refine": "REPLACE",
+                "boundingVolume": {
+                    "box": [
+                        0.5, -0.5, 0.0, 0.5, 0.0, 0.0, 0.0, -0.5, 0.0, 0.0, 0.0,
+                        0.1
+                    ]
+                },
+                "geometricError": 1.0
+            },
+            {
+                "content": {
+                    "uri": "extract_2.json"
+                },
+                "refine": "REPLACE",
+                "boundingVolume": {
+                    "box": [
+                        0.5, -0.5, 0.0, 0.5, 0.0, 0.0, 0.0, -0.5, 0.0, 0.0, 0.0,
+                        0.1
+                    ]
+                },
+                "geometricError": 1.0
+            },
+            {
+                "refine": "REPLACE",
+                "boundingVolume": {
+                    "box": [
+                        0.5, -0.5, 0.0, 0.5, 0.0, 0.0, 0.0, -0.5, 0.0, 0.0, 0.0,
+                        0.1
+                    ]
+                },
+                "geometricError": 1.0,
+                "children": [
+                    {
+                        "boundingVolume": {
+                            "box": [
+                                0.5, -0.5, 0.0, 0.5, 0.0, 0.0, 0.0, -0.5, 0.0,
+                                0.0, 0.0, 0.1
+                            ]
+                        },
+                        "geometricError": 1.0,
+                        "content": {
+                            "uri": "object_3.glb"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}
